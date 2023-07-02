@@ -1,0 +1,96 @@
+name: gitops-starter
+type: terraform
+description: Module to provision ArgoCD and bootstrap an application using the GitOps repo
+interfaces:
+  - github.com/cloud-native-toolkit/automation-modules#argocd-bootstrap
+tags:
+    - tools
+    - gitops
+    - bootstrap
+versions:
+- platforms:
+    - kubernetes
+    - ocp3
+    - ocp4
+  providers:
+    - name: clis
+      source: cloud-native-toolkit/clis
+    - name: gitops
+      source: cloud-native-toolkit/gitops
+  dependencies:
+    - id: cluster
+      interface: github.com/cloud-native-toolkit/automation-modules#cluster
+      refs: []
+    - id: olm
+      refs:
+        - source: github.com/cloud-native-toolkit/terraform-k8s-olm
+          version: ">= 1.2.2"
+    - id: gitops
+      refs:
+        - source: github.com/cloud-native-toolkit/terraform-tools-gitops
+          version: ">= 1.2.0"
+    - id: cert
+      refs:
+        - source: github.com/cloud-native-toolkit/terraform-util-sealed-secret-cert
+          version: ">= 0.0.0"
+  variables:
+    - name: cluster_type
+      moduleRef:
+        id: cluster
+        output: platform.type_code
+    - name: ingress_subdomain
+      moduleRef:
+        id: cluster
+        output: platform.ingress
+    - name: tls_secret_name
+      moduleRef:
+        id: cluster
+        output: platform.tls_secret
+    - name: cluster_config_file
+      moduleRef:
+        id: cluster
+        output: config_file_path
+    - name: olm_namespace
+      moduleRef:
+        id: olm
+        output: olm_namespace
+    - name: operator_namespace
+      moduleRef:
+        id: olm
+        output: target_namespace
+    - name: gitops_repo_url
+      moduleRef:
+        id: gitops
+        output: config_repo_url
+    - name: git_username
+      moduleRef:
+        id: gitops
+        output: config_username
+    - name: git_token
+      moduleRef:
+        id: gitops
+        output: config_token
+    - name: git_ca_cert
+      moduleRef:
+        id: gitops
+        output: config_ca_cert
+    - name: bootstrap_branch
+      moduleRef:
+        id: gitops
+        output: bootstrap_branch
+    - name: server_name
+      moduleRef:
+        id: gitops
+        output: server_name
+    - name: bootstrap_path
+      moduleRef:
+        id: gitops
+        output: bootstrap_path
+    - name: sealed_secret_cert
+      moduleRef:
+        id: cert
+        output: cert
+    - name: sealed_secret_private_key
+      moduleRef:
+        id: cert
+        output: private_key
