@@ -1,0 +1,57 @@
+name: Verify
+
+# Controls when the action will run.
+on:
+  workflow_call:
+    secrets:
+      IBMCLOUD_API_KEY:
+        required: true
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        testcase:
+          - ocp4_latest
+          - iks_latest
+      fail-fast: false
+      max-parallel: 1
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.9
+
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "mirror"
+          oc: "4"
+          helm: "latest"
+
+      - name: Verify deploy on ${{ matrix.testcase }}
+        uses: cloud-native-toolkit/action-module-verify-deploy@v2
+        with:
+          testcase: ${{ matrix.testcase }}
+          validateDeployScript: .github/scripts/validate-deploy.sh
+          testStagesDir: example
+        env:
+          TF_VAR_ibmcloud_api_key: ${{ secrets.IBMCLOUD_API_KEY }}
+          IBMCLOUD_API_KEY: ${{ secrets.IBMCLOUD_API_KEY }}
+
+      - name: Verify destroy on ${{ matrix.testcase }}
+        uses: cloud-native-toolkit/action-module-verify-destroy@v2
+        if: ${{ always() }}
+        with:
+          testcase: ${{ matrix.testcase }}
+          testStagesDir: example
+        env:
+          TF_VAR_ibmcloud_api_key: ${{ secrets.IBMCLOUD_API_KEY }}
+          IBMCLOUD_API_KEY: ${{ secrets.IBMCLOUD_API_KEY }}
