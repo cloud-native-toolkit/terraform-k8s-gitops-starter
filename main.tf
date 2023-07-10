@@ -1,6 +1,6 @@
 
 module "gitops_install" {
-  source = "github.com/cloud-native-toolkit/terraform-k8s-gitops-install.git?ref=v0.1.0"
+  source = "github.com/cloud-native-toolkit/terraform-k8s-gitops-install.git?ref=v0.1.1"
 
   cluster_type        = var.cluster_type
   ingress_subdomain   = var.ingress_subdomain
